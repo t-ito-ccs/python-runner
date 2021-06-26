@@ -1,0 +1,48 @@
+version: '3.5'
+services:
+  python-runner:
+    build: 
+        context: ./dockerfile
+        args:
+          - GIT_USER=default
+          - GIT_REPOSITORY=default
+          - GIT_REVISION=master
+          - GIT_PACKAGE=default
+          - EXEC_FILE=default
+    image: 'python-runner'
+    restart: always
+    # コンテナ名を明示的に指定する
+    container_name: 'python-runner'
+    # ホスト名を明示的に指定する
+    hostname: 'runner-server'
+    # 実行時の引数を指定
+    # 明示的に所属するネットワークを指定する
+    networks:
+      # networksの識別子
+      - container-link
+    # volumesの指定
+    volumes:
+    - ./volumes/dist:/var/opt/dist
+    - ./volumes/data:/var/opt/data
+    # ログのサイズを指定
+    logging:
+      options:
+        max-size: '200k'
+        max-file: '10'
+
+# ネットワーク定義
+networks:
+  # defaultネットワークとして全コンテナが所属するbridgeを指定
+  default:
+    external:
+      name: bridge
+  # コンテナ間通信用のネットワークセグメント
+  container-link:
+    # ネットワーク名
+    name: docker.internal
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: '172.20.100.0/24'
+
